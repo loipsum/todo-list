@@ -11,14 +11,14 @@
           v-model="todo"
           type="text"
         >
-          <template v-slot:after>
+          <template v-slot:append>
             <q-btn
               unelevated
               flat
               dense
               round
               color="primary"
-              icon="send"
+              icon="assignment"
               @click="addTask"
             />
           </template>
@@ -68,6 +68,17 @@
               @click="editTask(item, index)"
             />
             <q-btn
+              v-if="indexedit == index"
+              unelevated
+              flat
+              dense
+              round
+              color="secondary"
+              icon="close"
+              @click="editTask(item, index)"
+            />
+            <q-btn
+              v-else
               style="font-weight: 500"
               unelevated
               dense
@@ -95,6 +106,9 @@ import { ref } from "@vue/reactivity";
 import axios from "axios";
 
 const token = localStorage.getItem("token");
+const myheader = {
+  authorization: "Bearer " + token,
+};
 const items = ref([]);
 const todo = ref(null);
 const editval = ref(null);
@@ -152,14 +166,49 @@ async function getItems() {
   return res.data;
 }
 
-function addTask() {
+async function addTask() {
   if (!todo.value) return;
-  items.value.push(todo.value);
+  // items.value.push(todo.value);
+
+  try {
+    const res = await axios.post(
+      api + "todos",
+      {
+        title: todo.value,
+        status: "pending",
+      },
+      {
+        headers: {
+          authorization: "Bearer " + token,
+        },
+      }
+    );
+
+    console.log(res.data);
+
+    items.value = await getItems();
+  } catch (error) {
+    console.log(error.response);
+  }
 
   todo.value = null;
 }
-function editTask(item, index) {
+async function editTask(item, index) {
   if (indexedit.value == index) {
+    try {
+      const res = await axios.put(
+        api + "todos/" + item.id,
+        {
+          title: editval.value,
+        },
+        { headers: myheader }
+      );
+
+      console.log(res.data);
+
+      items.value = await getItems();
+    } catch (error) {}
+
     indexedit.value = null;
     return;
   }
@@ -170,6 +219,18 @@ function editTask(item, index) {
 async function doneTask(item, index) {
   if (item.status == "pending") {
     //set item status to done
+    try {
+      const res = await axios.put(
+        api + "todos-status/" + item.id,
+        { status: "done" },
+        {
+          headers: myheader,
+        }
+      );
+      items.value = await getItems();
+    } catch (error) {
+      console.log(error.response);
+    }
   }
 
   if (item.status == "done") {
