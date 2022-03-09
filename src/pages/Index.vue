@@ -75,7 +75,7 @@
               round
               color="secondary"
               icon="close"
-              @click="editTask(item, index)"
+              @click="indexedit = null"
             />
             <q-btn
               v-else
@@ -96,7 +96,6 @@
         </div>
       </q-card>
     </div>
-    <q-btn color="primary" icon="check" label="OK" @click="login" />
     <q-btn color="red" icon="check" label="OK" @click="logout" />
   </q-page>
 </template>
@@ -123,7 +122,6 @@ export default {
       editTask,
       doneTask,
       editval,
-      login,
       logout,
       indexedit,
     };
